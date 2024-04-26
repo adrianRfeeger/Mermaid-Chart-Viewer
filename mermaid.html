@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chart Builder with Contenteditable Div</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet"> <!-- Prism CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script> <!-- Prism.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.0/dist/html2canvas.min.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5; /* Light grey background */
+            border-radius: 10px;
+            font-family: 'Roboto', sans-serif;
+            color: #333; /* Dark grey text color */
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 10px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #00508f;
+            transform: scale(1.05);
+        }
+
+        .contenteditable-div {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc; /* Light grey border */
+            font-family: monospace;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            background-color: #fff; /* White background */
+            color: #333; /* Dark grey text color */
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ccc; /* Light grey horizontal rule */
+        }
+
+        .import-button {
+            margin-bottom: 10px;
+        }
+
+        /* Syntax highlighting styles */
+        .token.comment { color: #6a737d; } /* Comments */
+        .token.keyword { color: #d73a49; font-weight: bold; } /* Keywords */
+        .token.arrow { color: #005cc5; } /* Arrows */
+        .token.selector { color: #6f42c1; } /* Selectors */
+        .token.class { color: #005cc5; } /* Classes */
+        .token.event { color: #6f42c1; font-weight: bold; } /* Events */
+        .token.direction { color: #005cc5; font-weight: bold; } /* Directions */
+        .token.style { color: #6f42c1; font-weight: bold; } /* Styles */
+        .token.string { color: #032f62; } /* Strings */
+        .token.link { color: #d73a49; font-weight: bold; } /* Link labels */
+        .token.linkTarget { color: #005cc5; font-weight: bold; } /* Link targets */
+        .token.linkText { color: #005cc5; font-weight: bold; } /* Link text */
+        .token.text { color: #333; } /* Regular text */
+        .token.number { color: #005cc5; } /* Numbers */
+        .token.operator { color: #d73a49; } /* Operators */
+        .token.shape { color: #6f42c1; font-weight: bold; } /* Shape types */
+        .token.decorator { color: #005cc5; font-weight: bold; } /* Decorators */
+        .token.flowControl { color: #d73a49; font-weight: bold; } /* Flow control */
+        .token.color { color: #6f42c1; font-weight: bold; } /* Colors */
+
+        /* Adjusted connector color for better visibility */
+        .token.arrow { color: #6f42c1; } /* Arrows */
+
+        /* Customization for 'task' keyword */
+        .token.task { color: #228B22; font-weight: bold; } /* Tasks */
+
+        /* Customization for 'gateway' keyword */
+        .token.gateway { color: #FFA500; font-weight: bold; } /* Gateways */
+
+        /* Customization for 'first and last items' */
+        .token.firstLastItems { color: #d73a49; } /* Same color as other keywords */
+    </style>
+    <script>
+        // Custom Prism language for Mermaid
+        Prism.languages.mermaid = {
+            'comment': /#.*/,
+            'keyword': /\b(?:graph|subgraph|end|classDef|click|dir|TB|LR|TD|BT|clickHandler|link|on|note|style)\b/,
+            'arrow': /-->/,
+            'selector': /\b(?:class|node(?:\.|\s+style)\s*:\s*([\w-]+))\b/,
+            'event': /\b(?:click|dblclick)\b/,
+            'direction': /\b(?:TB|LR|TD|BT)\b/,
+            'style': /\b(?:dotted|solid|dashed)\b/,
+            'string': /"(?:\\.|[^\\"])*"/,
+            'link': /\[(.*?)\]/,
+            'linkTarget': /\((.*?)\)/,
+            'linkText': /\|(.*?)\|/,
+            'text': /\w+(?=")/,
+            'number': /\b\d+\b/,
+            'operator': /=/,
+            'shape': /\b(?:box|circle|ellipse|diamond|hexagon|rect|roundrect|stadium|cylinder|line|tab|cloud)\b/,
+            'decorator': /\b(?:start|end|left|right|link|node)\b/,
+            'flowControl': /\b(?:if|else|end)\b/,
+            'color': /\b(?:red|green|blue|orange|purple|pink|yellow|black|white|gray|darkred|darkgreen|darkblue|darkorange|darkpurple|darkpink|darkyellow|darkgray)\b/,
+            'task': /\b(?:task)\b/,  // Added 'task' keyword
+            'gateway': /\b(?:gateway)\b/,  // Changed to 'gateway' keyword
+            'firstLastItems': /\b(?:Start|SaveFile)\b/  // Added 'first and last items' keyword
+        };
+
+        // Function to apply Prism.js syntax highlighting to a contenteditable div
+        function highlightCode() {
+            const contentDiv = document.getElementById('mermaid-code');
+            if (contentDiv) {
+                const text = contentDiv.innerText.trim();  // Ensure clean input
+                const highlightedText = Prism.highlight(text, Prism.languages.mermaid, 'mermaid');
+                contentDiv.innerHTML = highlightedText;  // Update contenteditable div with highlighted code
+            }
+        }
+
+        // Render the Mermaid chart
+        function renderMermaidCode() {
+            const contentDiv = document.getElementById('mermaid-code');
+            const container = document.querySelector('.mermaid');
+
+            if (container && contentDiv) {
+                const mermaidCode = contentDiv.innerText.trim();
+                container.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+                mermaid.contentLoaded();
+            }
+        }
+
+        let timeoutId;
+        
+        function handleInput() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(function() {
+                highlightCode();  // Apply syntax highlighting
+                renderMermaidCode();  // Render the code after a short delay
+            }, 500);
+        }
+
+        window.onload = function() {
+            const contentDiv = document.getElementById('mermaid-code');
+            if (contentDiv) {
+                contentDiv.addEventListener('input', handleInput);
+
+                const defaultMermaidCode = `graph TD;
+                Start[Open Page] --> PasteMermaid["Paste or Import Mermaid Code into Text Area"];
+                PasteMermaid --> RenderChart["Render Chart in Container"];
+                RenderChart --> ExportOptions["Select Export Option"];
+                ExportOptions --> ExportFormat["Choose Format (SVG/PNG/Mermaid)"];
+                ExportFormat --> ExportButton["Click Export Button"];
+                ExportButton --> SaveFile["Save Chart to File"];
+            
+                PasteMermaid --> |Import from File| ImportMermaid["Click Import Button"];
+                ImportMermaid --> |Load .mermaid File| PasteMermaid;
+                `;
+                contentDiv.innerText = defaultMermaidCode;
+                handleInput();
+            }
+        };
+
+        async function importFromFile() {
+            try {
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'Mermaid Files',
+                            accept: {
+                                'text/plain': ['.mermaid', '.txt'],
+                            },
+                        },
+                    ],
+                });
+
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+                const contentDiv = document.getElementById('mermaid-code');
+
+                if (contentDiv) {
+                    contentDiv.innerText = text.trim();  // Ensure clean input
+                    handleInput();
+                }
+            } catch (error) {
+                console.error("Error importing file:", error);
+            }
+        }
+
+        async function exportChartAs() {
+            const exportFormat = document.getElementById('export-format').value;
+            const container = document.querySelector('.mermaid');
+
+            if (container) {
+                try {
+                    let blob = null;
+                    if (exportFormat === 'svg') {
+                        blob = new Blob([container.innerHTML], { type: 'image/svg+xml' });
+                    } else if (exportFormat === 'png') {
+                        const canvas = await html2canvas(container);
+                        blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    } else if (exportFormat === 'mermaid') {
+                        const mermaidCode = document.getElementById('mermaid-code').innerText.trim();
+                        blob = new Blob([mermaidCode], { type: 'text/plain' });
+                    }
+
+                    if (blob) {
+                        const fileHandle = await window.showSaveFilePicker({
+                            types: [
+                                {
+                                    description: `.${exportFormat.toUpperCase()} Files`,
+                                    accept: {
+                                        [exportFormat === 'svg' ? 'image/svg+xml' : 'image/png']: [`.${exportFormat}`],
+                                    },
+                                },
+                            ],
+                        });
+
+                        const writableStream = await fileHandle.createWritable();
+                        await writableStream.write(blob);
+                        await writableStream.close();
+                    }
+                } catch (error) {
+                    console.error("Error exporting chart:", error);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="section import-section">
+            <h2>Import Chart</h2>
+            <div id="mermaid-code" class="contenteditable-div" contenteditable="true">
+                <!-- Default content -->
+                graph TD;
+                Start[Open Page] --> |1| PasteMermaid["Paste or Import Mermaid Code into Text Area"];
+                PasteMermaid --> |2| RenderChart["Render Chart in Container"];
+                RenderChart --> |3| ExportOptions["Select Export Option"];
+                ExportOptions --> |4| ExportFormat["Choose Format (SVG/PNG/Mermaid)"];
+                graph TD;
+                Start[Open Page] --> PasteMermaid["Paste or Import Mermaid Code into Text Area"];
+                PasteMermaid -->RenderChart["Render Chart in Container"];
+                RenderChart --> ExportOptions["Select Export Option"];
+                ExportOptions --> ExportFormat["Choose Format (SVG/PNG/Mermaid)"];
+                ExportFormat -->ExportButton["Click Export Button"];
+                ExportButton -->SaveFile["Save Chart to File"];
+            
+                PasteMermaid --> |Import from File| ImportMermaid["Click Import Button"];
+                ImportMermaid --> |Load .mermaid File| PasteMermaid;
+            </div>
+            <div>
+                <button class="import-button" onclick="importFromFile()">Import from File</button>
+                <button onclick="exportChartAs()">Export Chart</button>
+                <select id="export-format">
+                    <option value="svg">SVG</option>
+                    <option value="png">PNG</option>
+                    <option value="mermaid">Mermaid Code</option>
+                </select>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="section export-section">
+            <h2>Mermaid Chart</h2>
+            <div class="mermaid">
+                <!-- Placeholder for the rendered chart -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
