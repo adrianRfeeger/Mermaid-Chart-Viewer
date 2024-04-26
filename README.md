@@ -1,4 +1,4 @@
-# Mermaid Chart Builder
+# Mermaid Chart Viewer
 
 This project is a simple web application for building and visualising Mermaid charts using a contenteditable div.
 
