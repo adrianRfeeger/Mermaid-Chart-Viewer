@@ -24,3 +24,7 @@ This project is a simple web application for building and visualising Mermaid ch
 - html2canvas (for exporting charts as PNG)
 - Google Fonts (Roboto)
 
+![mermaid-viewer](https://github.com/adrianRfeeger/Mermaid-Viewer/assets/139186297/c165c1e3-c192-4de6-8b12-14eae4a7cc60)
+
+
+
