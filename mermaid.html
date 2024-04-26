@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character encoding -->
     <meta charset="UTF-8">
+    <!-- Title of the page -->
     <title>Chart Builder with Contenteditable Div</title>
+    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet"> <!-- Prism CSS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script> <!-- Prism.js -->
+    <!-- Prism.js CSS for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet">
+    <!-- Prism.js Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <!-- Mermaid.js for rendering Mermaid charts -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- html2canvas for exporting charts as PNG -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.0/dist/html2canvas.min.js"></script>
+    <!-- Internal CSS styles -->
     <style>
+        /* Container styles */
         .container {
             max-width: 800px;
             margin: 40px auto;
@@ -19,11 +28,13 @@
             color: #333; /* Dark grey text color */
         }
 
+        /* Section styles */
         .section {
             margin-bottom: 30px;
             padding: 10px;
         }
 
+        /* Button styles */
         button {
             padding: 12px 25px;
             background-color: #007acc;
@@ -39,6 +50,7 @@
             transform: scale(1.05);
         }
 
+        /* Contenteditable div styles */
         .contenteditable-div {
             width: 100%;
             min-height: 200px;
@@ -52,17 +64,20 @@
             color: #333; /* Dark grey text color */
         }
 
+        /* Horizontal rule styles */
         hr {
             border: 0;
             height: 1px;
             background: #ccc; /* Light grey horizontal rule */
         }
 
+        /* Import button styles */
         .import-button {
             margin-bottom: 10px;
         }
 
         /* Syntax highlighting styles */
+        /* Define colors for different syntax tokens */
         .token.comment { color: #6a737d; } /* Comments */
         .token.keyword { color: #d73a49; font-weight: bold; } /* Keywords */
         .token.arrow { color: #005cc5; } /* Arrows */
@@ -95,8 +110,8 @@
         /* Customization for 'first and last items' */
         .token.firstLastItems { color: #d73a49; } /* Same color as other keywords */
     </style>
+    <!-- Custom Prism language for Mermaid -->
     <script>
-        // Custom Prism language for Mermaid
         Prism.languages.mermaid = {
             'comment': /#.*/,
             'keyword': /\b(?:graph|subgraph|end|classDef|click|dir|TB|LR|TD|BT|clickHandler|link|on|note|style)\b/,
@@ -123,41 +138,54 @@
 
         // Function to apply Prism.js syntax highlighting to a contenteditable div
         function highlightCode() {
+            // Get the contenteditable div element
             const contentDiv = document.getElementById('mermaid-code');
             if (contentDiv) {
-                const text = contentDiv.innerText.trim();  // Ensure clean input
+                // Get the text content and trim it
+                const text = contentDiv.innerText.trim();
+                // Highlight the text using Prism.js and update the innerHTML of the div
                 const highlightedText = Prism.highlight(text, Prism.languages.mermaid, 'mermaid');
-                contentDiv.innerHTML = highlightedText;  // Update contenteditable div with highlighted code
+                contentDiv.innerHTML = highlightedText;
             }
         }
 
-        // Render the Mermaid chart
+        // Function to render the Mermaid chart
         function renderMermaidCode() {
+            // Get the contenteditable div and the container for the chart
             const contentDiv = document.getElementById('mermaid-code');
             const container = document.querySelector('.mermaid');
 
             if (container && contentDiv) {
+                // Get the Mermaid code from the div
                 const mermaidCode = contentDiv.innerText.trim();
+                // Insert the Mermaid code into the container and render the chart
                 container.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
                 mermaid.contentLoaded();
             }
         }
 
         let timeoutId;
-        
+
+        // Function to handle input events with a delay
         function handleInput() {
+            // Clear the previous timeout
             clearTimeout(timeoutId);
+            // Set a new timeout to execute after a delay
             timeoutId = setTimeout(function() {
-                highlightCode();  // Apply syntax highlighting
-                renderMermaidCode();  // Render the code after a short delay
+                // Apply syntax highlighting and render the Mermaid chart
+                highlightCode();
+                renderMermaidCode();
             }, 500);
         }
 
+        // Event listener for window onload event
         window.onload = function() {
+            // Get the contenteditable div element
             const contentDiv = document.getElementById('mermaid-code');
             if (contentDiv) {
+                // Add input event listener to the contenteditable div
                 contentDiv.addEventListener('input', handleInput);
-
+                // Default Mermaid code for demonstration
                 const defaultMermaidCode = `graph TD;
                 Start[Open Page] --> PasteMermaid["Paste or Import Mermaid Code into Text Area"];
                 PasteMermaid --> RenderChart["Render Chart in Container"];
@@ -169,13 +197,16 @@
                 PasteMermaid --> |Import from File| ImportMermaid["Click Import Button"];
                 ImportMermaid --> |Load .mermaid File| PasteMermaid;
                 `;
+                // Set the default Mermaid code and trigger input event
                 contentDiv.innerText = defaultMermaidCode;
                 handleInput();
             }
         };
 
+        // Function to import Mermaid code from a file
         async function importFromFile() {
             try {
+                // Open file picker dialog to select a file
                 const [fileHandle] = await window.showOpenFilePicker({
                     types: [
                         {
@@ -186,13 +217,14 @@
                         },
                     ],
                 });
-
+                // Get the selected file and its text content
                 const file = await fileHandle.getFile();
                 const text = await file.text();
+                // Get the contenteditable div element
                 const contentDiv = document.getElementById('mermaid-code');
-
                 if (contentDiv) {
-                    contentDiv.innerText = text.trim();  // Ensure clean input
+                    // Set the text content and trigger input event
+                    contentDiv.innerText = text.trim();
                     handleInput();
                 }
             } catch (error) {
@@ -200,13 +232,17 @@
             }
         }
 
+        // Function to export the chart as SVG, PNG, or Mermaid code
         async function exportChartAs() {
+            // Get the selected export format
             const exportFormat = document.getElementById('export-format').value;
+            // Get the container for the chart
             const container = document.querySelector('.mermaid');
 
             if (container) {
                 try {
                     let blob = null;
+                    // Generate a blob based on the export format
                     if (exportFormat === 'svg') {
                         blob = new Blob([container.innerHTML], { type: 'image/svg+xml' });
                     } else if (exportFormat === 'png') {
@@ -218,6 +254,7 @@
                     }
 
                     if (blob) {
+                        // Open file save dialog to save the exported file
                         const fileHandle = await window.showSaveFilePicker({
                             types: [
                                 {
@@ -228,7 +265,7 @@
                                 },
                             ],
                         });
-
+                        // Create a writable stream and write the blob to the file
                         const writableStream = await fileHandle.createWritable();
                         await writableStream.write(blob);
                         await writableStream.close();
@@ -241,9 +278,13 @@
     </script>
 </head>
 <body>
+    <!-- Main container -->
     <div class="container">
+        <!-- Import section -->
         <div class="section import-section">
+            <!-- Import chart header -->
             <h2>Import Chart</h2>
+            <!-- Contenteditable div for Mermaid code -->
             <div id="mermaid-code" class="contenteditable-div" contenteditable="true">
                 <!-- Default content -->
                 graph TD;
@@ -262,9 +303,11 @@
                 PasteMermaid --> |Import from File| ImportMermaid["Click Import Button"];
                 ImportMermaid --> |Load .mermaid File| PasteMermaid;
             </div>
+            <!-- Buttons for import and export -->
             <div>
                 <button class="import-button" onclick="importFromFile()">Import from File</button>
                 <button onclick="exportChartAs()">Export Chart</button>
+                <!-- Dropdown for export format selection -->
                 <select id="export-format">
                     <option value="svg">SVG</option>
                     <option value="png">PNG</option>
@@ -273,10 +316,14 @@
             </div>
         </div>
 
+        <!-- Horizontal rule -->
         <hr/>
 
+        <!-- Export section -->
         <div class="section export-section">
+            <!-- Mermaid chart header -->
             <h2>Mermaid Chart</h2>
+            <!-- Container for the rendered chart -->
             <div class="mermaid">
                 <!-- Placeholder for the rendered chart -->
             </div>
